@@ -1,0 +1,73 @@
+# XcodeGen spec. Regenerate the Xcode project with:  xcodegen generate
+name: Altitude
+options:
+  bundleIdPrefix: com.gregcorey
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_USER_SCRIPT_SANDBOXING: true
+targets:
+  Altitude:
+    type: application
+    platform: iOS
+    sources:
+      - Altitude
+      - Shared
+    entitlements:
+      path: Altitude/Altitude.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.gregcorey.altitude
+    info:
+      path: Altitude/Info.plist
+      properties:
+        CFBundleDisplayName: Altitude
+        UILaunchScreen: {}
+        UIBackgroundModes:
+          - location
+        NSLocationWhenInUseUsageDescription: Altitude uses your location to read GPS altitude and keep tracking while you drive.
+        NSMotionUsageDescription: Altitude uses the barometer to smooth and refine your altitude.
+        NSSupportsLiveActivities: true
+        ITSAppUsesNonExemptEncryption: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    dependencies:
+      - target: AltitudeWidget
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gregcorey.altitude
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+  AltitudeWidget:
+    type: app-extension
+    platform: iOS
+    sources:
+      - AltitudeWidget
+      - Shared
+    entitlements:
+      path: AltitudeWidget/AltitudeWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.gregcorey.altitude
+    info:
+      path: AltitudeWidget/Info.plist
+      properties:
+        CFBundleDisplayName: Altitude
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.gregcorey.altitude.widget

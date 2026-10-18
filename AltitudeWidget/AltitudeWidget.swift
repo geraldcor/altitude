@@ -1,0 +1,188 @@
+import SwiftUI
+import WidgetKit
+
+/// Home Screen / Lock Screen / StandBy / CarPlay widget showing the last known altitude.
+/// CarPlay shows the `systemSmall` family with the background removed, so that
+/// family is required and the container background is left removable (the default).
+struct AltitudeWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: SharedStore.widgetKind, provider: AltitudeProvider()) { entry in
+            AltitudeWidgetView(entry: entry)
+                .containerBackground(for: .widget) {
+                    Color(.systemBackground)
+                }
+        }
+        .configurationDisplayName("Altitude")
+        .description("Last known altitude from the Altitude app.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryCircular, .accessoryRectangular, .accessoryInline])
+    }
+}
+
+struct AltitudeEntry: TimelineEntry {
+    let date: Date
+    let reading: AltitudeReading?
+    let unit: AltitudeUnit
+}
+
+struct AltitudeProvider: TimelineProvider {
+    func placeholder(in context: Context) -> AltitudeEntry {
+        AltitudeEntry(date: .now, reading: .sample, unit: .feet)
+    }
+
+    func getSnapshot(in context: Context, completion: @escaping (AltitudeEntry) -> Void) {
+        completion(context.isPreview ? placeholder(in: context) : current())
+    }
+
+    func getTimeline(in context: Context, completion: @escaping (Timeline<AltitudeEntry>) -> Void) {
+        let entry = current()
+        completion(Timeline(entries: [entry], policy: .after(.now.addingTimeInterval(30 * 60))))
+    }
+
+    private func current() -> AltitudeEntry {
+        AltitudeEntry(date: .now, reading: SharedStore.lastReading(), unit: SharedStore.unit)
+    }
+}
+
+struct AltitudeWidgetView: View {
+    @Environment(\.widgetFamily) private var family
+    let entry: AltitudeEntry
+
+    private var unit: AltitudeUnit { entry.unit }
+
+    var body: some View {
+        switch family {
+        case .accessoryInline:
+            inline
+        case .accessoryCircular:
+            circular
+        case .accessoryRectangular:
+            rectangular
+        case .systemMedium:
+            medium
+        default:
+            small
+        }
+    }
+
+    // MARK: Families
+
+    private var small: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Label("Altitude", systemImage: "mountain.2.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            if let reading = entry.reading, reading.hasFix {
+                Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                Text(unit.symbol)
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                updatedLabel(reading)
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            } else {
+                Text("—")
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .foregroundStyle(.tertiary)
+                Text("Open Altitude to start")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+    }
+
+    private var medium: some View {
+        HStack(alignment: .center, spacing: 16) {
+            small
+            if let reading = entry.reading, reading.hasFix {
+                Divider()
+                VStack(alignment: .leading, spacing: 8) {
+                    Label {
+                        Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
+                    } icon: {
+                        Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
+                    }
+                    .font(.headline)
+                    .monospacedDigit()
+                    Text(reading.source.label)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Text(AltitudeFormat.accuracy(reading.verticalAccuracyMeters, in: unit))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var inline: some View {
+        if let reading = entry.reading, reading.hasFix {
+            Text("▲ \(AltitudeFormat.altitude(reading.altitudeMeters, in: unit)) \(unit.symbol)")
+        } else {
+            Text("▲ —")
+        }
+    }
+
+    private var circular: some View {
+        VStack(spacing: 0) {
+            Image(systemName: "mountain.2.fill").font(.caption2)
+            if let reading = entry.reading, reading.hasFix {
+                Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
+                    .font(.system(.body, design: .rounded).weight(.bold))
+                    .monospacedDigit()
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                Text(unit.symbol).font(.system(size: 9))
+            } else {
+                Text("—").font(.body.weight(.bold))
+            }
+        }
+    }
+
+    private var rectangular: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Label("Altitude", systemImage: "mountain.2.fill").font(.caption.weight(.semibold))
+            if let reading = entry.reading, reading.hasFix {
+                Text("\(AltitudeFormat.altitude(reading.altitudeMeters, in: unit)) \(unit.symbol)")
+                    .font(.title3.weight(.bold))
+                    .monospacedDigit()
+                updatedLabel(reading).font(.caption2)
+            } else {
+                Text("No reading yet").font(.caption)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: Helpers
+
+    /// "3:29 ago" that ticks on its own; the system renders timer text without a reload.
+    private func updatedLabel(_ reading: AltitudeReading) -> some View {
+        HStack(spacing: 3) {
+            Text(reading.timestamp, style: .timer)
+                .monospacedDigit()
+            Text("ago")
+        }
+    }
+}
+
+#Preview("Small", as: .systemSmall) {
+    AltitudeWidget()
+} timeline: {
+    AltitudeEntry(date: .now, reading: .sample, unit: .feet)
+    AltitudeEntry(date: .now, reading: nil, unit: .feet)
+}
+
+#Preview("Medium", as: .systemMedium) {
+    AltitudeWidget()
+} timeline: {
+    AltitudeEntry(date: .now, reading: .sample, unit: .meters)
+}
