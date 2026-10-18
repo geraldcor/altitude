@@ -100,10 +100,10 @@ struct AltitudeWidgetView: View {
                     .font(.caption.weight(.medium))
                     .foregroundStyle(.secondary)
                     if !weather.hourly.isEmpty {
-                        WeatherHourlyRow(hours: weather.hourly, unit: unit)
+                        // Two hours fit the small size cleanly; medium gets all three.
+                        WeatherHourlyRow(hours: Array(weather.hourly.prefix(family == .systemMedium ? 3 : 2)), unit: unit)
                             .font(.caption2)
                             .foregroundStyle(.tertiary)
-                            .minimumScaleFactor(0.7)
                     }
                 }
                 Spacer(minLength: 0)
