@@ -29,6 +29,7 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.gregcorey.altitude
+        com.apple.developer.weatherkit: true
     info:
       path: Altitude/Info.plist
       properties:

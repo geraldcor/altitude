@@ -75,6 +75,22 @@ struct ContentView: View {
                         .foregroundStyle(.secondary)
                         .padding(.top, 8)
                 }
+                if let weather = reading.weather {
+                    HStack(spacing: 6) {
+                        Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
+                        Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
+                            .monospacedDigit()
+                        Text(weather.conditionText)
+                    }
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                    if !weather.hourly.isEmpty {
+                        WeatherHourlyRow(hours: weather.hourly, unit: unit)
+                            .font(.footnote)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
             } else {
                 Text("—")
                     .font(.system(size: 88, weight: .bold, design: .rounded))
@@ -98,6 +114,12 @@ struct ContentView: View {
                 row("Live Activity", liveActivity.isActive ? "Running" : (liveActivity.areActivitiesEnabled ? "Off" : "Disabled in Settings"))
                 if let position = positionText {
                     row("Position", position)
+                }
+                if let weather = service.weather {
+                    row("Weather fetched", weather.fetchedAt.formatted(date: .omitted, time: .shortened))
+                }
+                if let error = service.weatherError {
+                    Text(error).font(.footnote).foregroundStyle(.orange)
                 }
                 if let error = liveActivity.lastError {
                     Text(error).font(.footnote).foregroundStyle(.red)
@@ -125,6 +147,9 @@ struct ContentView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
+            Link("Weather data by  Weather", destination: URL(string: "https://weatherkit.apple.com/legal-attribution.html")!)
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
         }
     }
 

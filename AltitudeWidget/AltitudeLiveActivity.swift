@@ -79,6 +79,11 @@ struct AltitudeLiveActivity: Widget {
                 Text(place).lineLimit(1)
                 Text("·")
             }
+            if let weather = state.reading.weather {
+                Image(systemName: weather.symbolName)
+                Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: state.unit))
+                Text("·")
+            }
             Text(state.reading.source.label)
             Text("·")
             Text(AltitudeFormat.accuracy(state.reading.verticalAccuracyMeters, in: state.unit))
@@ -129,7 +134,7 @@ struct AltitudeActivityView: View {
             if reading.hasFix {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
-                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
                         .monospacedDigit()
                         .minimumScaleFactor(0.5)
                         .lineLimit(1)
@@ -142,9 +147,23 @@ struct AltitudeActivityView: View {
                     Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
                     Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
                         .monospacedDigit()
+                    if let weather = reading.weather {
+                        Spacer(minLength: 8)
+                        Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
+                        Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
+                            .monospacedDigit()
+                        Text(weather.conditionText)
+                            .lineLimit(1)
+                    }
                 }
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
+                if let weather = reading.weather, !weather.hourly.isEmpty {
+                    WeatherHourlyRow(hours: weather.hourly, unit: unit)
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
             } else {
                 Text("Acquiring…")
                     .font(.title2.weight(.semibold))
@@ -206,6 +225,26 @@ struct AltitudeActivityView: View {
             }
         }
         .padding()
+        .padding(.bottom, 18)
+        .overlay(alignment: .bottomLeading) {
+            if reading.hasFix, let weather = reading.weather {
+                HStack(spacing: 6) {
+                    Image(systemName: weather.symbolName)
+                        .symbolRenderingMode(.multicolor)
+                    Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
+                        .monospacedDigit()
+                    Text(weather.conditionText)
+                    if !weather.hourly.isEmpty {
+                        Text("·")
+                        WeatherHourlyRow(hours: weather.hourly, unit: unit)
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal)
+                .padding(.bottom, 6)
+            }
+        }
     }
 }
 

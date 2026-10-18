@@ -47,6 +47,8 @@ struct AltitudeReading: Codable, Hashable {
     var courseDegrees: Double?
     /// Reverse-geocoded city name for the current position.
     var placeName: String?
+    /// Latest WeatherKit snapshot for the current position.
+    var weather: WeatherSnapshot?
 
     var hasFix: Bool { source != .none }
 
@@ -68,7 +70,8 @@ struct AltitudeReading: Codable, Hashable {
         longitude: -105.0,
         speedMetersPerSecond: 28,
         courseDegrees: 270,
-        placeName: "Idaho Springs"
+        placeName: "Idaho Springs",
+        weather: .sample
     )
 }
 
@@ -108,5 +111,48 @@ enum AltitudeFormat {
         case .descending: return "arrow.down.right"
         case .level: return "arrow.right"
         }
+    }
+}
+
+/// Current conditions plus a short hourly outlook. Kept small so the Live
+/// Activity payload stays well under its 4 KB limit.
+struct WeatherSnapshot: Codable, Hashable {
+    struct Hour: Codable, Hashable {
+        var date: Date
+        var temperatureCelsius: Double
+        var symbolName: String
+    }
+
+    var temperatureCelsius: Double
+    var symbolName: String
+    var conditionText: String
+    var fetchedAt: Date
+    var hourly: [Hour]
+
+    static let sample = WeatherSnapshot(
+        temperatureCelsius: 12,
+        symbolName: "cloud.sun",
+        conditionText: "Partly Cloudy",
+        fetchedAt: .now,
+        hourly: [
+            Hour(date: .now.addingTimeInterval(3_600), temperatureCelsius: 11, symbolName: "cloud.sun"),
+            Hour(date: .now.addingTimeInterval(7_200), temperatureCelsius: 9, symbolName: "cloud"),
+            Hour(date: .now.addingTimeInterval(10_800), temperatureCelsius: 7, symbolName: "cloud.rain"),
+        ]
+    )
+}
+
+extension AltitudeFormat {
+    /// "54°" in Fahrenheit when the altitude unit is feet, Celsius otherwise.
+    static func temperature(_ celsius: Double, in unit: AltitudeUnit) -> String {
+        let value = unit == .feet ? celsius * 9 / 5 + 32 : celsius
+        return value.formatted(.number.precision(.fractionLength(0))) + "°"
+    }
+
+    /// "3pm" style hour label.
+    static func hourLabel(_ date: Date) -> String {
+        date.formatted(.dateTime.hour(.defaultDigits(amPM: .abbreviated)))
+            .replacingOccurrences(of: " ", with: "")
+            .lowercased()
     }
 }

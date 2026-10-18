@@ -83,12 +83,19 @@ struct AltitudeWidgetView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
-                if let place = reading.placeName {
-                    Text(place)
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                HStack(spacing: 4) {
+                    if let place = reading.placeName {
+                        Text(place).lineLimit(1)
+                    }
+                    if let weather = reading.weather {
+                        Spacer(minLength: 4)
+                        Image(systemName: weather.symbolName)
+                        Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
+                            .monospacedDigit()
+                    }
                 }
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
                 updatedLabel(reading)
                     .font(.caption2)

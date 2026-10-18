@@ -21,6 +21,8 @@ final class AltitudeService {
     private(set) var barometerAltitudeMeters: Double?
     private(set) var barometerAccuracyMeters: Double?
     private(set) var placeName: String?
+    private(set) var weather: WeatherSnapshot?
+    private(set) var weatherError: String?
 
     let barometerAvailable = CMAltimeter.isAbsoluteAltitudeAvailable()
 
@@ -38,6 +40,7 @@ final class AltitudeService {
     private var lastGeocodedLocation: CLLocation?
     private var lastGeocodeTime = Date.distantPast
     private var geocodeInFlight = false
+    private let weatherFetcher = WeatherFetcher()
 
     /// Reverse geocoding is a network call; only redo it after this much time
     /// and this much movement.
@@ -112,6 +115,7 @@ final class AltitudeService {
     private func ingest(_ location: CLLocation) {
         lastLocation = location
         reverseGeocodeIfDue(location)
+        fetchWeatherIfDue(location)
         let altitude = location.altitude
         let accuracy = location.verticalAccuracy
 
@@ -171,6 +175,22 @@ final class AltitudeService {
             return short
         }
         return nil
+    }
+
+    // MARK: - Weather
+
+    private func fetchWeatherIfDue(_ location: CLLocation) {
+        guard weatherFetcher.isDue(for: location) else { return }
+        Task { [weak self] in
+            guard let self else { return }
+            if let snapshot = await self.weatherFetcher.fetch(for: location) {
+                self.weather = snapshot
+                self.weatherError = nil
+                self.publish(force: true)
+            } else if self.weather == nil {
+                self.weatherError = "Weather unavailable (check the WeatherKit capability and network)"
+            }
+        }
     }
 
     // MARK: - Barometer
@@ -249,6 +269,7 @@ final class AltitudeService {
             next.courseDegrees = location.course >= 0 ? location.course : nil
         }
         next.placeName = placeName
+        next.weather = weather
 
         reading = next
         statusMessage = "Tracking"
