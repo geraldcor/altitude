@@ -12,8 +12,12 @@ final class WeatherFetcher {
     private var inFlight = false
 
     private let interval: TimeInterval = 15 * 60
+    private let retryInterval: TimeInterval = 60
     private let distanceMeters: CLLocationDistance = 10_000
     private let hoursAhead = 3
+
+    /// Last failure, for display on the phone.
+    private(set) var lastErrorDescription: String?
 
     func isDue(for location: CLLocation, now: Date = .now) -> Bool {
         guard !inFlight else { return false }
@@ -42,6 +46,7 @@ final class WeatherFetcher {
                         symbolName: $0.symbolName
                     )
                 }
+            lastErrorDescription = nil
             return WeatherSnapshot(
                 temperatureCelsius: current.temperature.converted(to: .celsius).value,
                 symbolName: current.symbolName,
@@ -50,6 +55,9 @@ final class WeatherFetcher {
                 hourly: Array(upcoming)
             )
         } catch {
+            lastErrorDescription = String(describing: error)
+            // Retry soon rather than waiting out the full interval.
+            lastFetch = Date().addingTimeInterval(retryInterval - interval)
             return nil
         }
     }

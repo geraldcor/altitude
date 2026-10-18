@@ -188,7 +188,8 @@ final class AltitudeService {
                 self.weatherError = nil
                 self.publish(force: true)
             } else if self.weather == nil {
-                self.weatherError = "Weather unavailable (check the WeatherKit capability and network)"
+                let detail = self.weatherFetcher.lastErrorDescription ?? "no response"
+                self.weatherError = "Weather unavailable: \(detail)"
             }
         }
     }
