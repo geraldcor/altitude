@@ -83,19 +83,29 @@ struct AltitudeWidgetView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
-                HStack(spacing: 4) {
-                    if let place = reading.placeName {
-                        Text(place).lineLimit(1)
-                    }
-                    if let weather = reading.weather {
-                        Spacer(minLength: 4)
+                if let place = reading.placeName {
+                    Text(place)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                if let weather = reading.weather {
+                    HStack(spacing: 4) {
                         Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
+                        Text(weather.conditionText).lineLimit(1)
+                    }
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    if !weather.hourly.isEmpty {
+                        WeatherHourlyRow(hours: weather.hourly, unit: unit)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .minimumScaleFactor(0.7)
                     }
                 }
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
                 Spacer(minLength: 0)
                 updatedLabel(reading)
                     .font(.caption2)

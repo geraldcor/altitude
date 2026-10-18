@@ -187,6 +187,8 @@ final class AltitudeService {
                 self.weather = snapshot
                 self.weatherError = nil
                 self.publish(force: true)
+                // Weather changes at most every 15 min, so this is a cheap reload.
+                WidgetRefresher.reloadNow()
             } else if self.weather == nil {
                 let detail = self.weatherFetcher.lastErrorDescription ?? "no response"
                 self.weatherError = "Weather unavailable: \(detail)"

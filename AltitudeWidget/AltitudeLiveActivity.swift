@@ -134,21 +134,29 @@ struct AltitudeActivityView: View {
             if reading.hasFix {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
                     Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
                         .monospacedDigit()
-                        .minimumScaleFactor(0.5)
+                        .minimumScaleFactor(0.6)
                         .lineLimit(1)
+                        .layoutPriority(2)
                         .contentTransition(.numericText())
                     Text(unit.symbol)
                         .font(.headline)
                         .foregroundStyle(.secondary)
+                        .layoutPriority(2)
+                    Spacer(minLength: 6)
+                    HStack(spacing: 3) {
+                        Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
+                        Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
+                            .monospacedDigit()
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 }
-                HStack(spacing: 4) {
-                    Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
-                    Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
-                        .monospacedDigit()
-                    if let weather = reading.weather {
-                        Spacer(minLength: 8)
+                if let weather = reading.weather {
+                    HStack(spacing: 5) {
                         Image(systemName: weather.symbolName)
                             .symbolRenderingMode(.multicolor)
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
@@ -156,13 +164,8 @@ struct AltitudeActivityView: View {
                         Text(weather.conditionText)
                             .lineLimit(1)
                     }
-                }
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
-                if let weather = reading.weather, !weather.hourly.isEmpty {
-                    WeatherHourlyRow(hours: weather.hourly, unit: unit)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
                 }
             } else {
                 Text("Acquiring…")
