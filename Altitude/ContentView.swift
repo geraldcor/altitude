@@ -69,6 +69,12 @@ struct ContentView: View {
                 Text("\(reading.source.label) · \(AltitudeFormat.accuracy(reading.verticalAccuracyMeters, in: unit))")
                     .font(.footnote)
                     .foregroundStyle(.tertiary)
+                if let place = reading.placeName {
+                    Label(place, systemImage: "mappin.and.ellipse")
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 8)
+                }
             } else {
                 Text("—")
                     .font(.system(size: 88, weight: .bold, design: .rounded))

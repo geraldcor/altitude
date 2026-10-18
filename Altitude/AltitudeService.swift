@@ -1,6 +1,7 @@
 import CoreLocation
 import CoreMotion
 import Foundation
+import MapKit
 import Observation
 
 /// Reads GPS altitude (Core Location) and barometric absolute altitude (Core Motion),
@@ -19,6 +20,7 @@ final class AltitudeService {
     private(set) var gpsVerticalAccuracyMeters: Double?
     private(set) var barometerAltitudeMeters: Double?
     private(set) var barometerAccuracyMeters: Double?
+    private(set) var placeName: String?
 
     let barometerAvailable = CMAltimeter.isAbsoluteAltitudeAvailable()
 
@@ -33,6 +35,14 @@ final class AltitudeService {
     private var barometerOffsetMeters: Double?
     private var history: [(time: Date, altitude: Double)] = []
     private var lastPublish = Date.distantPast
+    private var lastGeocodedLocation: CLLocation?
+    private var lastGeocodeTime = Date.distantPast
+    private var geocodeInFlight = false
+
+    /// Reverse geocoding is a network call; only redo it after this much time
+    /// and this much movement.
+    private let geocodeInterval: TimeInterval = 60
+    private let geocodeDistanceMeters: CLLocationDistance = 500
 
     var authorizationStatus: CLAuthorizationStatus {
         authorizationManager.authorizationStatus
@@ -44,6 +54,8 @@ final class AltitudeService {
         statusMessage = "Starting"
         history.removeAll()
         barometerOffsetMeters = nil
+        lastGeocodedLocation = nil
+        geocodeInFlight = false
 
         authorizationManager.requestWhenInUseAuthorization()
 
@@ -99,6 +111,7 @@ final class AltitudeService {
 
     private func ingest(_ location: CLLocation) {
         lastLocation = location
+        reverseGeocodeIfDue(location)
         let altitude = location.altitude
         let accuracy = location.verticalAccuracy
 
@@ -121,6 +134,43 @@ final class AltitudeService {
             }
         }
         publish()
+    }
+
+    // MARK: - Place name
+
+    private func reverseGeocodeIfDue(_ location: CLLocation) {
+        guard !geocodeInFlight else { return }
+        let now = Date()
+        if let previous = lastGeocodedLocation,
+           now.timeIntervalSince(lastGeocodeTime) < geocodeInterval,
+           location.distance(from: previous) < geocodeDistanceMeters {
+            return
+        }
+        geocodeInFlight = true
+        lastGeocodedLocation = location
+        lastGeocodeTime = now
+        Task { [weak self] in
+            let name = await Self.placeName(for: location)
+            guard let self else { return }
+            self.geocodeInFlight = false
+            if let name, name != self.placeName {
+                self.placeName = name
+                self.publish(force: true)
+            }
+        }
+    }
+
+    /// "City, ST" when available, otherwise the shortest address MapKit offers.
+    private static func placeName(for location: CLLocation) async -> String? {
+        guard let request = MKReverseGeocodingRequest(location: location) else { return nil }
+        guard let item = try? await request.mapItems.first else { return nil }
+        if let city = item.addressRepresentations?.cityWithContext, !city.isEmpty {
+            return city
+        }
+        if let short = item.address?.shortAddress, !short.isEmpty {
+            return short
+        }
+        return nil
     }
 
     // MARK: - Barometer
@@ -146,7 +196,7 @@ final class AltitudeService {
 
     // MARK: - Fusion and publishing
 
-    private func publish() {
+    private func publish(force: Bool = false) {
         let altitude: Double
         let accuracy: Double
         let source: AltitudeSource
@@ -174,7 +224,7 @@ final class AltitudeService {
         history.removeAll { now.timeIntervalSince($0.time) > 30 }
 
         // Publish at most once per second; the barometer alone ticks ~1 Hz.
-        guard now.timeIntervalSince(lastPublish) >= 1 else { return }
+        guard force || now.timeIntervalSince(lastPublish) >= 1 else { return }
         lastPublish = now
 
         var climbRate = 0.0
@@ -198,6 +248,7 @@ final class AltitudeService {
             next.speedMetersPerSecond = location.speed >= 0 ? location.speed : nil
             next.courseDegrees = location.course >= 0 ? location.course : nil
         }
+        next.placeName = placeName
 
         reading = next
         statusMessage = "Tracking"

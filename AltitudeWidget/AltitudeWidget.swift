@@ -73,14 +73,22 @@ struct AltitudeWidgetView: View {
                 .foregroundStyle(.secondary)
             Spacer(minLength: 0)
             if let reading = entry.reading, reading.hasFix {
-                Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                    .minimumScaleFactor(0.5)
-                    .lineLimit(1)
-                Text(unit.symbol)
-                    .font(.headline)
-                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
+                        .font(.system(size: 40, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
+                    Text(unit.symbol)
+                        .font(.headline)
+                        .foregroundStyle(.secondary)
+                }
+                if let place = reading.placeName {
+                    Text(place)
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
                 Spacer(minLength: 0)
                 updatedLabel(reading)
                     .font(.caption2)

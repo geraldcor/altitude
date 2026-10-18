@@ -75,6 +75,10 @@ struct AltitudeLiveActivity: Widget {
     private func footer(_ context: ActivityViewContext<AltitudeAttributes>) -> some View {
         let state = context.state
         return HStack {
+            if let place = state.reading.placeName {
+                Text(place).lineLimit(1)
+                Text("·")
+            }
             Text(state.reading.source.label)
             Text("·")
             Text(AltitudeFormat.accuracy(state.reading.verticalAccuracyMeters, in: state.unit))
@@ -112,7 +116,8 @@ struct AltitudeActivityView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 Image(systemName: "mountain.2.fill")
-                Text("Altitude")
+                Text(reading.placeName ?? "Altitude")
+                    .lineLimit(1)
                 Spacer()
                 if context.isStale {
                     Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
@@ -155,9 +160,10 @@ struct AltitudeActivityView: View {
     private var fullBody: some View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
-                Label("Altitude", systemImage: "mountain.2.fill")
+                Label(reading.placeName ?? "Altitude", systemImage: "mountain.2.fill")
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
+                    .lineLimit(1)
                 if reading.hasFix {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(AltitudeFormat.altitude(reading.altitudeMeters, in: unit))
