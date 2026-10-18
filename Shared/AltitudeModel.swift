@@ -45,7 +45,7 @@ struct AltitudeReading: Codable, Hashable {
     var longitude: Double?
     var speedMetersPerSecond: Double?
     var courseDegrees: Double?
-    /// Reverse-geocoded "City, ST" style name for the current position.
+    /// Reverse-geocoded city name for the current position.
     var placeName: String?
 
     var hasFix: Bool { source != .none }
@@ -68,7 +68,7 @@ struct AltitudeReading: Codable, Hashable {
         longitude: -105.0,
         speedMetersPerSecond: 28,
         courseDegrees: 270,
-        placeName: "Idaho Springs, CO"
+        placeName: "Idaho Springs"
     )
 }
 

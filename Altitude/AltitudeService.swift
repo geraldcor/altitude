@@ -160,11 +160,11 @@ final class AltitudeService {
         }
     }
 
-    /// "City, ST" when available, otherwise the shortest address MapKit offers.
+    /// City name only (road-trip use). Falls back to the shortest address MapKit offers.
     private static func placeName(for location: CLLocation) async -> String? {
         guard let request = MKReverseGeocodingRequest(location: location) else { return nil }
         guard let item = try? await request.mapItems.first else { return nil }
-        if let city = item.addressRepresentations?.cityWithContext, !city.isEmpty {
+        if let city = item.addressRepresentations?.cityName, !city.isEmpty {
             return city
         }
         if let short = item.address?.shortAddress, !short.isEmpty {
