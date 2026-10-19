@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7b267"/>
+      <stop offset="0.6" stop-color="#f4845f"/>
+      <stop offset="1" stop-color="#c0392b"/>
+    </linearGradient>
+    <linearGradient id="back" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b85c38"/>
+      <stop offset="1" stop-color="#7a3b22"/>
+    </linearGradient>
+    <linearGradient id="front" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#7a3b22"/>
+      <stop offset="1" stop-color="#3f1d10"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <circle cx="700" cy="250" r="120" fill="#fff1c9"/>
+  <path d="M60 860 L395 330 L730 860 Z" fill="url(#back)"/>
+  <path d="M395 330 L470 450 L440 440 L410 470 L380 440 L350 455 L320 445 Z" fill="#fff8ee"/>
+  <path d="M300 860 L660 290 L1020 860 Z" fill="url(#front)"/>
+  <path d="M660 290 L760 450 L725 435 L695 470 L660 445 L625 475 L590 440 L560 450 Z" fill="#fff8ee"/>
+  <rect x="0" y="860" width="1024" height="164" fill="#3f1d10"/>
+</svg>
