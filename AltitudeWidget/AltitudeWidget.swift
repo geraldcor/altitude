@@ -22,6 +22,7 @@ struct AltitudeEntry: TimelineEntry {
     let date: Date
     let reading: AltitudeReading?
     let unit: AltitudeUnit
+    var isTracking: Bool = true
 }
 
 struct AltitudeProvider: TimelineProvider {
@@ -39,7 +40,8 @@ struct AltitudeProvider: TimelineProvider {
     }
 
     private func current() -> AltitudeEntry {
-        AltitudeEntry(date: .now, reading: SharedStore.lastReading(), unit: SharedStore.unit)
+        AltitudeEntry(date: .now, reading: SharedStore.lastReading(), unit: SharedStore.unit,
+                      isTracking: SharedStore.isTracking)
     }
 }
 
@@ -189,12 +191,27 @@ struct AltitudeWidgetView: View {
 
     // MARK: Helpers
 
-    /// "3:29 ago" that ticks on its own; the system renders timer text without a reload.
+    /// While tracking: "3:29 ago", ticking on its own (the system renders timer text
+    /// without a reload). Stopped: a fixed "Stopped 3:42 PM" so the widget sits still.
+    @ViewBuilder
     private func updatedLabel(_ reading: AltitudeReading) -> some View {
-        HStack(spacing: 3) {
-            Text(reading.timestamp, style: .timer)
-                .monospacedDigit()
-            Text("ago")
+        if entry.isTracking {
+            HStack(spacing: 3) {
+                Text(reading.timestamp, style: .timer)
+                    .monospacedDigit()
+                Text("ago")
+            }
+        } else {
+            let sameDay = Calendar.current.isDate(reading.timestamp, inSameDayAs: entry.date)
+            HStack(spacing: 3) {
+                Text("Stopped")
+                if sameDay {
+                    Text(reading.timestamp, format: .dateTime.hour().minute())
+                } else {
+                    Text(reading.timestamp, format: .dateTime.month(.abbreviated).day().hour().minute())
+                }
+            }
+            .monospacedDigit()
         }
     }
 }
@@ -203,6 +220,7 @@ struct AltitudeWidgetView: View {
     AltitudeWidget()
 } timeline: {
     AltitudeEntry(date: .now, reading: .sample, unit: .feet)
+    AltitudeEntry(date: .now, reading: .sample, unit: .feet, isTracking: false)
     AltitudeEntry(date: .now, reading: nil, unit: .feet)
 }
 

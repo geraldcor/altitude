@@ -163,11 +163,18 @@ struct ContentView: View {
             liveActivity.update(reading: reading, unit: SharedStore.unit)
             WidgetRefresher.reloadIfDue()
         }
+        // A crash or force-quit leaves the shared flag set; the widget would keep
+        // ticking as if tracking. Reconcile it with reality on every launch.
+        if SharedStore.isTracking != service.isTracking {
+            SharedStore.isTracking = service.isTracking
+            WidgetRefresher.reloadNow()
+        }
     }
 
     private func start() {
         service.start()
         liveActivity.start(reading: service.reading ?? .placeholder, unit: unit)
+        WidgetRefresher.reloadNow()
     }
 
     private func stop() {

@@ -54,6 +54,7 @@ final class AltitudeService {
     func start() {
         guard !isTracking else { return }
         isTracking = true
+        SharedStore.isTracking = true
         statusMessage = "Starting"
         history.removeAll()
         barometerOffsetMeters = nil
@@ -83,6 +84,7 @@ final class AltitudeService {
     func stop() {
         guard isTracking else { return }
         isTracking = false
+        SharedStore.isTracking = false
         locationTask?.cancel()
         locationTask = nil
         backgroundSession?.invalidate()

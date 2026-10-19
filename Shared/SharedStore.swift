@@ -7,6 +7,7 @@ enum SharedStore {
     static let widgetKind = "AltitudeWidget"
     static let unitKey = "unit"
     private static let readingKey = "lastReading"
+    private static let trackingKey = "isTracking"
 
     static var defaults: UserDefaults {
         UserDefaults(suiteName: appGroupID) ?? .standard
@@ -20,6 +21,13 @@ enum SharedStore {
     static func lastReading() -> AltitudeReading? {
         guard let data = defaults.data(forKey: readingKey) else { return nil }
         return try? JSONDecoder().decode(AltitudeReading.self, from: data)
+    }
+
+    /// True while the app is actively tracking. The widget uses it to decide
+    /// between a ticking "ago" timer and a static "last updated" time.
+    static var isTracking: Bool {
+        get { defaults.bool(forKey: trackingKey) }
+        set { defaults.set(newValue, forKey: trackingKey) }
     }
 
     static var unit: AltitudeUnit {
