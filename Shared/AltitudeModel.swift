@@ -149,6 +149,13 @@ extension AltitudeFormat {
         return value.formatted(.number.precision(.fractionLength(0))) + "°"
     }
 
+    /// Eight-point compass name for a course in degrees, e.g. 312 → "NW".
+    static func compassName(_ degrees: Double) -> String {
+        let names = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+        let index = Int((degrees / 45).rounded()) % 8
+        return names[(index + 8) % 8]
+    }
+
     /// "3pm" style hour label.
     static func hourLabel(_ date: Date) -> String {
         date.formatted(.dateTime.hour(.defaultDigits(amPM: .abbreviated)))

@@ -145,15 +145,10 @@ struct AltitudeActivityView: View {
                         .foregroundStyle(.secondary)
                         .layoutPriority(2)
                     Spacer(minLength: 6)
-                    HStack(spacing: 3) {
-                        Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
-                        Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
-                            .monospacedDigit()
-                    }
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                    CompassLabel(courseDegrees: reading.courseDegrees)
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                 }
                 if let weather = reading.weather {
                     HStack(spacing: 5) {

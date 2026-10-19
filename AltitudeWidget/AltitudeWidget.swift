@@ -83,10 +83,11 @@ struct AltitudeWidgetView: View {
                         .font(.headline)
                         .foregroundStyle(.secondary)
                 }
+                // CarPlay renders the widget on a dark, busy background; secondary and
+                // tertiary colours wash out there, so body text stays in the main colour.
                 if let place = reading.placeName {
                     Text(place)
                         .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
                 if let weather = reading.weather {
@@ -98,18 +99,15 @@ struct AltitudeWidgetView: View {
                         Text(weather.conditionText).lineLimit(1)
                     }
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(.secondary)
                     if !weather.hourly.isEmpty {
                         // Two hours fit the small size cleanly; medium gets all three.
                         WeatherHourlyRow(hours: Array(weather.hourly.prefix(family == .systemMedium ? 3 : 2)), unit: unit)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                            .font(.caption2.weight(.medium))
                     }
                 }
                 Spacer(minLength: 0)
                 updatedLabel(reading)
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
+                    .font(.caption2.weight(.medium))
             } else {
                 Text("—")
                     .font(.system(size: 44, weight: .bold, design: .rounded))
@@ -128,6 +126,8 @@ struct AltitudeWidgetView: View {
             if let reading = entry.reading, reading.hasFix {
                 Divider()
                 VStack(alignment: .leading, spacing: 8) {
+                    CompassLabel(courseDegrees: reading.courseDegrees)
+                        .font(.headline)
                     Label {
                         Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
                     } icon: {

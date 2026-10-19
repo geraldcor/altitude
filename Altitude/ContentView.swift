@@ -59,10 +59,13 @@ struct ContentView: View {
                 Text(unit.symbol)
                     .font(.title2)
                     .foregroundStyle(.secondary)
-                HStack(spacing: 6) {
-                    Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
-                    Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
-                        .monospacedDigit()
+                HStack(spacing: 16) {
+                    HStack(spacing: 6) {
+                        Image(systemName: AltitudeFormat.trendSymbol(reading.climbRateMetersPerMinute))
+                        Text("\(AltitudeFormat.climb(reading.climbRateMetersPerMinute, in: unit)) \(unit.climbSymbol)")
+                            .monospacedDigit()
+                    }
+                    CompassLabel(courseDegrees: reading.courseDegrees)
                 }
                 .font(.title3)
                 .foregroundStyle(.secondary)
