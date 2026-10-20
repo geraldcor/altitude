@@ -47,7 +47,13 @@ struct AltitudeProvider: TimelineProvider {
 
 struct AltitudeWidgetView: View {
     @Environment(\.widgetFamily) private var family
+    /// CarPlay (and StandBy) strip the container background. That is the only
+    /// signal WidgetKit gives for "this is rendering in the car", so the layout
+    /// keys off it: the car gets the hourly outlook, the phone keeps it simpler.
+    @Environment(\.showsWidgetContainerBackground) private var showsBackground
     let entry: AltitudeEntry
+
+    private var isCarPlay: Bool { !showsBackground }
 
     private var unit: AltitudeUnit { entry.unit }
 
@@ -70,9 +76,17 @@ struct AltitudeWidgetView: View {
 
     private var small: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Label("Altitude", systemImage: "mountain.2.fill")
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.secondary)
+            HStack(alignment: .firstTextBaseline) {
+                Label("Altitude", systemImage: "mountain.2.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 4)
+                if let reading = entry.reading, reading.hasFix {
+                    // Top right and small so the body rows get the room.
+                    updatedLabel(reading)
+                        .font(.system(size: 7, weight: .medium))
+                }
+            }
             Spacer(minLength: 0)
             if let reading = entry.reading, reading.hasFix {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -100,16 +114,15 @@ struct AltitudeWidgetView: View {
                             .monospacedDigit()
                         Text(weather.conditionText).lineLimit(1)
                     }
-                    .font(.caption.weight(.medium))
-                    if !weather.hourly.isEmpty {
-                        // Two hours fit the small size cleanly; medium gets all three.
-                        WeatherHourlyRow(hours: Array(weather.hourly.prefix(family == .systemMedium ? 3 : 2)), unit: unit)
+                    // The phone widget is read up close: conditions only, a size up.
+                    // The car gets the hourly outlook underneath as columns.
+                    .font(isCarPlay ? .caption.weight(.medium) : .footnote.weight(.medium))
+                    if isCarPlay, !weather.hourly.isEmpty {
+                        WeatherHourlyColumns(hours: Array(weather.hourly.prefix(3)), unit: unit)
                             .font(.caption2.weight(.medium))
                     }
                 }
                 Spacer(minLength: 0)
-                updatedLabel(reading)
-                    .font(.caption2.weight(.medium))
             } else {
                 Text("—")
                     .font(.system(size: 44, weight: .bold, design: .rounded))
@@ -213,6 +226,29 @@ struct AltitudeWidgetView: View {
             }
             .monospacedDigit()
         }
+    }
+}
+
+/// Hourly outlook as columns: conditions on top, hour label underneath.
+private struct WeatherHourlyColumns: View {
+    let hours: [WeatherSnapshot.Hour]
+    let unit: AltitudeUnit
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            ForEach(Array(hours.enumerated()), id: \.offset) { _, hour in
+                VStack(alignment: .leading, spacing: 1) {
+                    HStack(spacing: 3) {
+                        Image(systemName: hour.symbolName)
+                            .symbolRenderingMode(.multicolor)
+                        Text(AltitudeFormat.temperature(hour.temperatureCelsius, in: unit))
+                            .monospacedDigit()
+                    }
+                    Text(AltitudeFormat.hourLabel(hour.date))
+                }
+            }
+        }
+        .lineLimit(1)
     }
 }
 
