@@ -53,6 +53,16 @@ widget is the "last known" surface.
 4. On the phone: tap **Start tracking**, allow location ("While Using") and
    motion access. The big number should settle within a few seconds outdoors.
 
+### Installing from the command line
+
+`Scripts/deploy.sh` builds, installs, and relaunches the app on the phone
+(device ID as the first argument or in `ALTITUDE_DEVICE`; the default is the
+author's phone). It terminates the running app before installing. Installing a
+new build over an app that is in the middle of a background location session
+can orphan that session, and the location indicator then stays in the status
+bar until the phone restarts. Stopping tracking before an install, or letting
+the script kill the app, avoids it.
+
 ## Putting it in the car
 
 * **Live Activity (the live one).** The Live Activity appears on the CarPlay

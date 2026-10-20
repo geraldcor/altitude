@@ -73,6 +73,8 @@ final class AltitudeService {
                     guard let self, self.isTracking else { break }
                     self.handle(update)
                 }
+            } catch is CancellationError {
+                // Normal exit from stop(); nothing to report.
             } catch {
                 self?.statusMessage = "Location stream ended: \(error.localizedDescription)"
             }
@@ -85,14 +87,27 @@ final class AltitudeService {
         guard isTracking else { return }
         isTracking = false
         SharedStore.isTracking = false
-        locationTask?.cancel()
-        locationTask = nil
-        backgroundSession?.invalidate()
-        backgroundSession = nil
         if barometerAvailable {
             altimeter.stopAbsoluteAltitudeUpdates()
         }
-        statusMessage = "Stopped"
+        statusMessage = "Stopping"
+
+        // The location indicator in the status bar only clears once the
+        // liveUpdates stream has actually finished, so wait for the task to
+        // unwind before tearing down the background session. "Stopped" is
+        // therefore a true statement, not a hope.
+        let task = locationTask
+        locationTask = nil
+        task?.cancel()
+        Task { [weak self] in
+            await task?.value
+            guard let self else { return }
+            self.backgroundSession?.invalidate()
+            self.backgroundSession = nil
+            if !self.isTracking {
+                self.statusMessage = "Stopped"
+            }
+        }
     }
 
     // MARK: - Location
