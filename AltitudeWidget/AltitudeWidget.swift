@@ -76,17 +76,9 @@ struct AltitudeWidgetView: View {
 
     private var small: some View {
         VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline) {
-                Label("Altitude", systemImage: "mountain.2.fill")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 4)
-                if let reading = entry.reading, reading.hasFix {
-                    // Top right and small so the body rows get the room.
-                    updatedLabel(reading)
-                        .font(.system(size: 7, weight: .medium))
-                }
-            }
+            Label("Altitude", systemImage: "mountain.2.fill")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
             Spacer(minLength: 0)
             if let reading = entry.reading, reading.hasFix {
                 HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -123,6 +115,10 @@ struct AltitudeWidgetView: View {
                     }
                 }
                 Spacer(minLength: 0)
+                // Bottom right, small, so it reads as a footnote rather than a row.
+                updatedLabel(reading)
+                    .font(.system(size: 7, weight: .medium))
+                    .frame(maxWidth: .infinity, alignment: .trailing)
             } else {
                 Text("—")
                     .font(.system(size: 44, weight: .bold, design: .rounded))
@@ -245,6 +241,7 @@ private struct WeatherHourlyColumns: View {
                             .monospacedDigit()
                     }
                     Text(AltitudeFormat.hourLabel(hour.date))
+                        .font(.system(size: 8, weight: .medium))
                 }
             }
         }
