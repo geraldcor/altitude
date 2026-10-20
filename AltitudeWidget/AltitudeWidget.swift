@@ -115,10 +115,9 @@ struct AltitudeWidgetView: View {
                     }
                 }
                 Spacer(minLength: 0)
-                // Bottom right, small, so it reads as a footnote rather than a row.
+                // Bottom left, small, so it reads as a footnote rather than a row.
                 updatedLabel(reading)
                     .font(.system(size: 7, weight: .medium))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
             } else {
                 Text("—")
                     .font(.system(size: 44, weight: .bold, design: .rounded))
