@@ -14,7 +14,7 @@ final class WeatherFetcher {
     private let interval: TimeInterval = 15 * 60
     private let retryInterval: TimeInterval = 60
     private let distanceMeters: CLLocationDistance = 10_000
-    private let hoursAhead = 3
+    private let hoursAhead = 5
 
     /// Last failure, for display on the phone.
     private(set) var lastErrorDescription: String?

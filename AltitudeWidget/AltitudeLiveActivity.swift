@@ -188,8 +188,8 @@ struct AltitudeActivityView: View {
                     }
                     .font(.subheadline.weight(.medium))
                     if !weather.hourly.isEmpty {
-                        WeatherHourlyColumns(hours: Array(weather.hourly.prefix(3)), unit: unit,
-                                             hourFont: .caption2.weight(.medium))
+                        WeatherHourlyColumns(hours: Array(weather.hourly.prefix(5)), unit: unit,
+                                             hourFont: .caption2.weight(.medium), alignment: .center)
                             .font(.footnote.weight(.medium))
                     }
                 }

@@ -6,11 +6,14 @@ struct WeatherHourlyColumns: View {
     let unit: AltitudeUnit
     /// The hour label sits a step below the conditions; callers pick the step.
     var hourFont: Font = .system(size: 8, weight: .medium)
+    /// Where the hour label sits under its conditions. CarPlay reads better
+    /// left-justified; the Lock Screen centres it.
+    var alignment: HorizontalAlignment = .leading
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             ForEach(Array(hours.enumerated()), id: \.offset) { _, hour in
-                VStack(alignment: .center, spacing: 1) {
+                VStack(alignment: alignment, spacing: 1) {
                     HStack(spacing: 3) {
                         Image(systemName: hour.symbolName)
                             .symbolRenderingMode(.multicolor)
