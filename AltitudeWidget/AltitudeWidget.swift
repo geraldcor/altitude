@@ -102,8 +102,6 @@ struct AltitudeWidgetView: View {
                     HStack(spacing: 4) {
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(weather.conditionText).lineLimit(1)
                     }
                     // The phone widget is read up close: conditions only, a size up.

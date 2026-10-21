@@ -80,8 +80,6 @@ struct ContentView: View {
                 }
                 if let weather = reading.weather {
                     HStack(spacing: 6) {
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
                         Text(weather.conditionText)
@@ -89,9 +87,10 @@ struct ContentView: View {
                     .font(.headline)
                     .foregroundStyle(.secondary)
                     if !weather.hourly.isEmpty {
-                        WeatherHourlyRow(hours: weather.hourly, unit: unit)
-                            .font(.footnote)
-                            .foregroundStyle(.tertiary)
+                        WeatherHourlyColumns(hours: weather.hourly, unit: unit,
+                                             hourFont: .caption.weight(.medium))
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.secondary)
                     }
                 }
             } else {

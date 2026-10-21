@@ -81,7 +81,6 @@ struct AltitudeLiveActivity: Widget {
             }
             if let weather = state.reading.weather {
                 Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: state.unit))
-                Image(systemName: weather.symbolName)
                 Text("·")
             }
             Text(state.reading.source.label)
@@ -154,8 +153,6 @@ struct AltitudeActivityView: View {
                     HStack(spacing: 5) {
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(weather.conditionText)
                             .lineLimit(1)
                     }
@@ -182,8 +179,6 @@ struct AltitudeActivityView: View {
                     HStack(spacing: 6) {
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(weather.conditionText)
                     }
                     .font(.subheadline.weight(.medium))
