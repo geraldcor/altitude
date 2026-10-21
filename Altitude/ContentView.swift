@@ -88,7 +88,7 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
                     if !weather.hourly.isEmpty {
                         WeatherHourlyColumns(hours: weather.hourly, unit: unit,
-                                             hourFont: .caption.weight(.medium))
+                                             hourFont: .footnote.weight(.medium))
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.secondary)
                     }
