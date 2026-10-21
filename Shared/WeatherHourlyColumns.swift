@@ -15,10 +15,10 @@ struct WeatherHourlyColumns: View {
             ForEach(Array(hours.enumerated()), id: \.offset) { _, hour in
                 VStack(alignment: alignment, spacing: 1) {
                     HStack(spacing: 3) {
-                        Image(systemName: hour.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(AltitudeFormat.temperature(hour.temperatureCelsius, in: unit))
                             .monospacedDigit()
+                        Image(systemName: hour.symbolName)
+                            .symbolRenderingMode(.multicolor)
                     }
                     Text(AltitudeFormat.hourLabel(hour.date))
                         .font(hourFont)

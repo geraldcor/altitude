@@ -80,8 +80,8 @@ struct AltitudeLiveActivity: Widget {
                 Text("·")
             }
             if let weather = state.reading.weather {
-                Image(systemName: weather.symbolName)
                 Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: state.unit))
+                Image(systemName: weather.symbolName)
                 Text("·")
             }
             Text(state.reading.source.label)
@@ -152,10 +152,10 @@ struct AltitudeActivityView: View {
                 }
                 if let weather = reading.weather {
                     HStack(spacing: 5) {
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
+                        Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
                         Text(weather.conditionText)
                             .lineLimit(1)
                     }
@@ -180,16 +180,16 @@ struct AltitudeActivityView: View {
             if reading.hasFix, let weather = reading.weather {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
-                        Image(systemName: weather.symbolName)
-                            .symbolRenderingMode(.multicolor)
                         Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
                             .monospacedDigit()
+                        Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
                         Text(weather.conditionText)
                     }
                     .font(.subheadline.weight(.medium))
                     if !weather.hourly.isEmpty {
                         WeatherHourlyColumns(hours: Array(weather.hourly.prefix(5)), unit: unit,
-                                             hourFont: .caption2.weight(.medium), alignment: .center)
+                                             hourFont: .caption2.weight(.medium))
                             .font(.footnote.weight(.medium))
                     }
                 }
