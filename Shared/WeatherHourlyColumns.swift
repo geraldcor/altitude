@@ -8,7 +8,7 @@ struct WeatherHourlyColumns: View {
     var hourFont: Font = .system(size: 8, weight: .medium)
     /// Where the hour label sits under its conditions. Centred everywhere now
     /// that the conditions line is quieter; left-justified is one word away.
-    var alignment: HorizontalAlignment = .center
+    var alignment: HorizontalAlignment = .trailing
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
