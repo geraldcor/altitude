@@ -204,11 +204,13 @@ struct AltitudeWidgetView: View {
     @ViewBuilder
     private func updatedLabel(_ reading: AltitudeReading) -> some View {
         if entry.isTracking {
-            HStack(spacing: 3) {
-                Text(reading.timestamp, style: .timer)
-                    .monospacedDigit()
-                Text("ago")
-            }
+            // A timer Text reserves the width of its widest possible value, which
+            // pushed "ago" to the far right in an HStack. Interpolating it into one
+            // Text keeps "ago" right after the digits.
+            Text("\(Text(reading.timestamp, style: .timer)) ago")
+                .monospacedDigit()
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
         } else {
             let sameDay = Calendar.current.isDate(reading.timestamp, inSameDayAs: entry.date)
             HStack(spacing: 3) {
@@ -221,30 +223,6 @@ struct AltitudeWidgetView: View {
             }
             .monospacedDigit()
         }
-    }
-}
-
-/// Hourly outlook as columns: conditions on top, hour label underneath.
-private struct WeatherHourlyColumns: View {
-    let hours: [WeatherSnapshot.Hour]
-    let unit: AltitudeUnit
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            ForEach(Array(hours.enumerated()), id: \.offset) { _, hour in
-                VStack(alignment: .leading, spacing: 1) {
-                    HStack(spacing: 3) {
-                        Image(systemName: hour.symbolName)
-                            .symbolRenderingMode(.multicolor)
-                        Text(AltitudeFormat.temperature(hour.temperatureCelsius, in: unit))
-                            .monospacedDigit()
-                    }
-                    Text(AltitudeFormat.hourLabel(hour.date))
-                        .font(.system(size: 8, weight: .medium))
-                }
-            }
-        }
-        .lineLimit(1)
     }
 }
 

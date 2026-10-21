@@ -175,6 +175,30 @@ struct AltitudeActivityView: View {
     }
 
     private var fullBody: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            fullHeadline
+            if reading.hasFix, let weather = reading.weather {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 6) {
+                        Image(systemName: weather.symbolName)
+                            .symbolRenderingMode(.multicolor)
+                        Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
+                            .monospacedDigit()
+                        Text(weather.conditionText)
+                    }
+                    .font(.subheadline.weight(.medium))
+                    if !weather.hourly.isEmpty {
+                        WeatherHourlyColumns(hours: Array(weather.hourly.prefix(3)), unit: unit,
+                                             hourFont: .caption2.weight(.medium))
+                            .font(.footnote.weight(.medium))
+                    }
+                }
+            }
+        }
+        .padding()
+    }
+
+    private var fullHeadline: some View {
         HStack(alignment: .center, spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 Label(reading.placeName ?? "Altitude", systemImage: "mountain.2.fill")
@@ -220,27 +244,6 @@ struct AltitudeActivityView: View {
                             .foregroundStyle(.orange)
                     }
                 }
-            }
-        }
-        .padding()
-        .padding(.bottom, 18)
-        .overlay(alignment: .bottomLeading) {
-            if reading.hasFix, let weather = reading.weather {
-                HStack(spacing: 6) {
-                    Image(systemName: weather.symbolName)
-                        .symbolRenderingMode(.multicolor)
-                    Text(AltitudeFormat.temperature(weather.temperatureCelsius, in: unit))
-                        .monospacedDigit()
-                    Text(weather.conditionText)
-                    if !weather.hourly.isEmpty {
-                        Text("·")
-                        WeatherHourlyRow(hours: weather.hourly, unit: unit)
-                    }
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-                .padding(.bottom, 6)
             }
         }
     }
